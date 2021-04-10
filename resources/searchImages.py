@@ -3,7 +3,7 @@ from io import BytesIO
 import pysftp
 from flask import request
 from flask_restful import Resource
-from secret_config.credentials import *
+from config.credentials import Credentials
 
 import status
 from resources.utils.image_utils import get_bounding_box_from_xml, rect_overlap
@@ -23,11 +23,6 @@ class SearchImagesResource(Resource):
         print(request_dict)
 
         try:
-            start_date = request_dict["start_date"]
-            end_date = request_dict["end_date"]
-            for _ in range(2):
-                start_date = start_date.replace('-','')
-                end_date = end_date.replace('-','')
             left = request_dict["left"]
             bottom = request_dict["bottom"]
             right = request_dict["right"]
@@ -41,10 +36,14 @@ class SearchImagesResource(Resource):
             }
 
             response = {
-                "images" : []
+                "images": []
             }
 
-            with pysftp.Connection(host=sftp_hostname, username=sftp_username, password=sftp_password) as sftp:
+            cred = Credentials()
+
+            with pysftp.Connection(host=cred.sftp_hostname,
+                                   username=cred.sftp_username,
+                                   password=cred.sftp_password) as sftp:
                 command = "find ./ternaus -name '*MS*.TIF*'"
                 paths = sftp.execute(command)
 
@@ -53,12 +52,6 @@ class SearchImagesResource(Resource):
                 for path in paths:
                     path = path[:-1].decode()
                     print(path)
-                    pos = path.rfind("PER1") + 5
-                    date = path[pos: pos + 8]
-                    print(date, start_date, end_date)
-
-                    if start_date <= date <= end_date:
-                        date_filtered_paths.append((path, date))
 
                 for (path, date) in date_filtered_paths:
                     file = BytesIO()
