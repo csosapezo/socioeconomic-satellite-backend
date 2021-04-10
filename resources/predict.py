@@ -4,26 +4,26 @@ from io import BytesIO
 
 import numpy as np
 import progressbar
+import pysftp
 import rasterio
 from flask import request
 from flask_restful import Resource
 from rasterio.io import MemoryFile
-import pysftp
 
 import status
-from resources.utils.image_utils import create_patches, reconstruct_image, convert_mask_to_png, convert_raster_to_png,\
-    get_bounding_box, get_png_raster
+from config import Credentials, ModelPath
+from resources.utils.image_utils import create_patches, reconstruct_image, convert_mask_to_png, get_bounding_box, \
+    get_png_raster
 from resources.utils.json_utils import build_response
-from resources.utils.segmenter import WaterSegmentation
-from secret_config.credentials import *
+from resources.utils.determinator import IncomeDetermination
 
 UPLOAD_DIRECTORY = "static/"
-MODEL_PATH = 'models/model_40epoch_100_percent_UNet11_fold0.pth'
 
 if not os.path.exists(UPLOAD_DIRECTORY):
     os.makedirs(UPLOAD_DIRECTORY)
 
-model = WaterSegmentation(MODEL_PATH)
+paths = ModelPath()
+model = IncomeDetermination(paths)
 
 
 class PredictResource(Resource):
@@ -54,7 +54,11 @@ class PredictResource(Resource):
         last_dot = filepath.rfind('.')  # Ocurrencia del último punto
         filename = filepath[last_slash:last_dot]  # Nombre de la imagen
 
-        with pysftp.Connection(host=sftp_hostname, username=sftp_username, password=sftp_password) as sftp:
+        cred = Credentials()
+
+        with pysftp.Connection(host=cred.sftp_hostname,
+                               username=cred.sftp_username,
+                               password=cred.sftp_password) as sftp:
             print("Nombre del archivo: {}".format(filename))
             file = BytesIO()
             print(filepath)
@@ -90,11 +94,12 @@ class PredictResource(Resource):
             print("Creando bloques de 4 x 512 x 512...")
             patches, meta = create_patches(dataset)
             splitting = time.time()
-            print("Bloques de 4 x 512 x 512 creados, tiempo transcurrido: {}s".format(str(round(splitting - opening, 2))))
+            print(
+                "Bloques de 4 x 512 x 512 creados, tiempo transcurrido: {}s".format(str(round(splitting - opening, 2))))
             masks = []
             bar = progressbar.ProgressBar(maxval=len(patches),
-                                        widgets=[progressbar.Bar('=', '[', ']'), ' ', progressbar.Counter(), " / ",
-                                                str(len(patches))])
+                                          widgets=[progressbar.Bar('=', '[', ']'), ' ', progressbar.Counter(), " / ",
+                                                   str(len(patches))])
             # La barra se muestra así [=========         ] X / Total
             bar.start()
             idx = 0
