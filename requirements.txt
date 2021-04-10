@@ -16,7 +16,7 @@ Flask-RESTful==0.3.8
 idna==2.9
 itsdangerous==0.24
 Jinja2==2.9.6
-MarkupSafe==1.0
+MarkupSafe
 numpy==1.18.2
 opencv-python==4.2.0.32
 paramiko==2.7.1
