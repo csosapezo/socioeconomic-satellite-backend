@@ -11,7 +11,7 @@ from flask_restful import Resource
 from rasterio.io import MemoryFile
 
 import status
-from config import Credentials, ModelPath
+from config import SFTPCredentials, ModelPath
 from resources.utils.image_utils import create_patches, reconstruct_image, convert_mask_to_png, get_bounding_box, \
     get_png_raster
 from resources.utils.json_utils import build_response
@@ -54,7 +54,7 @@ class PredictResource(Resource):
         last_dot = filepath.rfind('.')  # Ocurrencia del último punto
         filename = filepath[last_slash:last_dot]  # Nombre de la imagen
 
-        cred = Credentials()
+        cred = SFTPCredentials()
 
         with pysftp.Connection(host=cred.sftp_hostname,
                                username=cred.sftp_username,

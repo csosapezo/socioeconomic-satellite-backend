@@ -3,7 +3,7 @@ from io import BytesIO
 import pysftp
 from flask import request
 from flask_restful import Resource
-from config.credentials import Credentials
+from config.sftp_credentials import SFTPCredentials
 
 import status
 from resources.utils.image_utils import get_bounding_box_from_xml, rect_overlap
@@ -39,7 +39,7 @@ class SearchImagesResource(Resource):
                 "images": []
             }
 
-            cred = Credentials()
+            cred = SFTPCredentials()
 
             with pysftp.Connection(host=cred.sftp_hostname,
                                    username=cred.sftp_username,
