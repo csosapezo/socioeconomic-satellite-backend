@@ -66,7 +66,6 @@ class SearchImagesResource(Resource):
                     sftp.getfo(xml_path, file)
                     file.seek(0)
 
-                    date = date[6:8] + "/" + date[4:6] + "/" + date[0:4]
                     bounding_box = get_bounding_box_from_xml(file)
                     print(bounding_box)
 
@@ -80,7 +79,6 @@ class SearchImagesResource(Resource):
                         response["images"].append({
                             "path": path,
                             "name": filename,
-                            "date": date,
                             "bounding_box": bounding_box
                         })
 
