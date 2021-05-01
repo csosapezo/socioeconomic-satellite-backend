@@ -2,74 +2,43 @@ import dateutil.parser
 from flask import url_for
 
 
-def build_response(tif_filename, png_filename, raster_png_filename, bounding_box):
+def build_response(bounding_box, masks, is_located=None):
     """Prepara los datos a enviar en un diccionario entendible por el solicitante
-
-    :param tif_filename: cadena con la ruta a la imagen en tif
-    :type tif_filename: str
-
-    :param png_filename: cadena con la ruta a la imagen en png
-    :type png_filename: str
-
-    :param raster_png_filename: cadena con la ruta a la imagen original en png
-    :type raster_png_filename: str
 
     :param bounding_box: diccionario de coordenadas
     :type bounding_box: dict
+
+    :param masks: lista de direcciones de máscaras
+    :type masks: list
+
+    :param is_located: describe si la imagen fue encontrada o no
+    :type is_located: bool
     """
-    return {
-        "mask": {
-            'tif_filename': url_for('static', filename=tif_filename),
-            'png_mask': url_for('static', filename=png_filename),
-            'png_raster': url_for('static', filename=raster_png_filename),
+
+    if is_located is False:
+        image = {}
+    else:
+        image = {
+
             'bounding_box': {
                 'top': bounding_box['top'],
                 'bottom': bounding_box['bottom'],
                 'left': bounding_box['left'],
                 'right': bounding_box['right']
-            }
-        }
-    }
+            },
 
-
-def build_response_from_search(is_located, tif_filename, png_filename, raster_png_filename, bounding_box):
-    """Prepara los datos a enviar en un diccionario entendible por el solicitante
-
-    :param is_located: variable lógica que es verdader si se encontró el archivo
-    :type is_located: bool
-
-    :param tif_filename: cadena con la ruta a la imagen en tif
-    :type tif_filename: str
-
-    :param png_filename: cadena con la ruta a la imagen en png
-    :type png_filename: str
-
-    :param raster_png_filename: cadena con la ruta a la imagen original en png
-    :type raster_png_filename: str
-
-    :param bounding_box: diccionario de coordenadas
-    :type bounding_box: dict
-    """
-    if is_located:
-        return {
-            "is_located": is_located,
-            "mask": {
-                'tif_filename': url_for('static', filename=tif_filename),
-                'png_mask': url_for('static', filename=png_filename),
-                'png_raster': url_for('static', filename=raster_png_filename),
-                'bounding_box': {
-                    'top': bounding_box['top'],
-                    'bottom': bounding_box['bottom'],
-                    'left': bounding_box['left'],
-                    'right': bounding_box['right']
+            'masks': [
+                {
+                    'url': url_for('static', filename=mask),
+                    'level': mask[mask.rfind['_']:mask.rfind['.']]
                 }
-            }
+                for mask in masks]
         }
-    else:
-        return {
-            "is_located": is_located,
-            "mask": {}
-        }
+
+    return {
+        "is_located": is_located if is_located is not None else '',
+        "image": image
+    }
 
 
 def read_search_data(json_data):
