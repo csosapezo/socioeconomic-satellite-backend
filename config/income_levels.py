@@ -14,5 +14,5 @@ class IncomeLevels:
         for index, level in config[scale].items():
             self.levels[level] = int(index)
 
-    def __call__(self, level):
+    def __getitem__(self, level):
         return self.levels[level]

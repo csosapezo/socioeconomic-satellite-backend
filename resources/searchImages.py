@@ -47,13 +47,10 @@ class SearchImagesResource(Resource):
                 command = "find ./ternaus -name '*MS*.TIF*'"
                 paths = sftp.execute(command)
 
-                date_filtered_paths = []
-
                 for path in paths:
-                    path = path[:-1].decode()
-                    print(path)
 
-                for (path, date) in date_filtered_paths:
+                    path = path[:-1].decode()
+
                     file = BytesIO()
                     xml_path = path[:]
                     print(xml_path)

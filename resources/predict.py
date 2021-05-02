@@ -6,12 +6,14 @@ import numpy as np
 import progressbar
 import pysftp
 import rasterio
+import torch
 from flask import request
 from flask_restful import Resource
 from rasterio.io import MemoryFile
 
 import status
 from config import SFTPCredentials, ModelPath
+from config.income_levels import IncomeLevels
 from resources.utils.image_utils import create_patches, reconstruct_image, convert_mask_to_png, get_bounding_box, \
     get_png_raster
 from resources.utils.json_utils import build_response
@@ -96,7 +98,7 @@ class PredictResource(Resource):
             splitting = time.time()
             print(
                 "Bloques de 4 x 512 x 512 creados, tiempo transcurrido: {}s".format(str(round(splitting - opening, 2))))
-            masks = []
+            masks = {}
             bar = progressbar.ProgressBar(maxval=len(patches),
                                           widgets=[progressbar.Bar('=', '[', ']'), ' ', progressbar.Counter(), " / ",
                                                    str(len(patches))])
@@ -104,15 +106,28 @@ class PredictResource(Resource):
             bar.start()
             idx = 0
             print("Obteniendo las máscaras por cada bloque...")
+            levels = IncomeLevels()
             for patch in patches:
                 prediction = model.predict(patch)
-                masks.append(prediction.data.cpu().numpy())
-                print(len(masks))
+
+                for idx in range(prediction.shape[1]):
+                    if not levels[idx] in masks:
+                        masks[levels[idx]] = []
+
+                    masks[levels[idx]]. \
+                        append(torch.reshape(prediction, (1, 1, prediction.shape[0], prediction.shape[1]))
+                               .data.cpu().numpy())
+
                 bar.update(idx + 1)
                 idx += 1
 
             predicting = time.time()
             print("Mascaras obtenidas! Tiempo transcurrido: {}s".format(str(round(predicting - splitting, 2))))
+
+            # ---------------------------- Modificar esta parte para hacer el mismo proceso por máscara ------------- #
+
+            # TODO generalizar esto para cada capa de la respuesta
+
             masks = np.asarray(masks)
 
             print("Construyendo la mascara final + metadata...")
@@ -126,6 +141,8 @@ class PredictResource(Resource):
             raster_png_filename = get_png_raster(filepath, sftp, mask_metadata)
             converting = time.time()
             print("Conversión exitosa! Tiempo transcurrido: {}s".format(str(round(converting - constructing, 2))))
+
+            # ---------------------------- Modificar esta parte para hacer el mismo proceso por máscara ------------- #
 
             bounding_box = get_bounding_box(memfile.open())
 
