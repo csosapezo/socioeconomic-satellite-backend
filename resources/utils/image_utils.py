@@ -76,7 +76,7 @@ def create_patches(dataset):
     return patches, meta
 
 
-def reconstruct_image(masks, metadata, img_shape, filename):
+def reconstruct_image(masks, metadata, img_shape, filename, level):
     """Combina un conjunto de bloques de (1,4,512,512) píxeles para generar una máscara de segmentación de cuerpos de
     agua y guarda el resultado localmente.
 
@@ -91,6 +91,10 @@ def reconstruct_image(masks, metadata, img_shape, filename):
 
     :param filename: nombre del archivo que contenía a la imagen original
     :type filename: str
+
+    :param level: nivel socioeconómico
+    :type level: str
+
     """
     pos = 0
     # C, H, W
@@ -116,7 +120,7 @@ def reconstruct_image(masks, metadata, img_shape, filename):
     metadata['height'] = mask.shape[1]
     metadata['width'] = mask.shape[2]
     metadata['dtype'] = mask.dtype
-    mask_filename = filename + "_MASK.TIF"
+    mask_filename = filename + "_MASK_{}.TIF".format(level)
     with rio.open(os.path.join(UPLOAD_DIRECTORY, mask_filename), 'w', **metadata) as outds:
         outds.write(mask)
 

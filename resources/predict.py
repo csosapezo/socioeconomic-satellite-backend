@@ -124,30 +124,19 @@ class PredictResource(Resource):
             predicting = time.time()
             print("Mascaras obtenidas! Tiempo transcurrido: {}s".format(str(round(predicting - splitting, 2))))
 
-            # ---------------------------- Modificar esta parte para hacer el mismo proceso por máscara ------------- #
+            reconstructed_maps = []
 
-            # TODO generalizar esto para cada capa de la respuesta
+            for level, mask_set in masks.items():
 
-            masks = np.asarray(masks)
-
-            print("Construyendo la mascara final + metadata...")
-            print("Nombre de archivo: {}".format(filename))
-            mask_filename, mask, mask_metadata = reconstruct_image(masks, meta, img_npy.shape, filename)
-            constructing = time.time()
-            print("Mascara construida! Tiempo transcurrido: {}s".format(str(round(constructing - predicting, 2))))
-
-            print("Convirtiendo máscara a PNG...")
-            png_filename = convert_mask_to_png(mask_filename, mask, mask_metadata)
-            raster_png_filename = get_png_raster(filepath, sftp, mask_metadata)
-            converting = time.time()
-            print("Conversión exitosa! Tiempo transcurrido: {}s".format(str(round(converting - constructing, 2))))
-
-            # ---------------------------- Modificar esta parte para hacer el mismo proceso por máscara ------------- #
+                mask_set = np.asarray(mask_set)
+                mask_filename, mask, mask_metadata = reconstruct_image(mask_set, meta, img_npy.shape, filename, level)
+                png_filename = convert_mask_to_png(mask_filename, mask, mask_metadata)
+                reconstructed_maps.append(png_filename)
 
             bounding_box = get_bounding_box(memfile.open())
 
             end = time.time()
-            response = build_response(mask_filename, png_filename, raster_png_filename, bounding_box)
+            response = build_response(bounding_box, reconstructed_maps)
             print("Tiempo total: {}s".format(str(round(end - start, 2))))
 
             return response, status.HTTP_200_OK
