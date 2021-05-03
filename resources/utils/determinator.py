@@ -30,7 +30,7 @@ class IncomeDetermination(object):
 
         img_mask_input = torch.cat((img_input, response), 1)
         trained_model = self.income_model
-        response = model_utils.run_model(img_mask_input, trained_model)
+        response = model_utils.run_model_softmax(img_mask_input, trained_model)
         del trained_model
 
         return response

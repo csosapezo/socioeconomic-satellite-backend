@@ -34,3 +34,19 @@ def run_model(patch, model):
     with torch.set_grad_enabled(False):
         response = torch.sigmoid(model(patch))
     return response
+
+
+def run_model_softmax(patch, model):
+    """
+    Ejecuta un modelo de PyTorch.
+
+    :param patch: imagen a procesar;
+    :type patch: torch.autograd.Variable
+
+    :param model: modelo de PyTorch
+    :type model: torch.nn.Module
+    """
+    model.eval()
+    # print("Model in eval mode")
+    response = torch.sigmoid(model(patch))
+    return response
