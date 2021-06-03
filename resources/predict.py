@@ -1,31 +1,32 @@
+import logging
 import os
 import time
 from io import BytesIO
 
-import numpy as np
-import progressbar
 import pysftp
 import rasterio
-import torch
 from flask import request
 from flask_restful import Resource
 from rasterio.io import MemoryFile
 
 import status
-from config import SFTPCredentials, ModelPath
-from config.income_levels import IncomeLevels
-from resources.utils.image_utils import create_patches, reconstruct_image, convert_mask_to_png, get_bounding_box, \
-    get_png_raster
-from resources.utils.json_utils import build_response
+from config import SFTPCredentials, ModelPaths
 from resources.utils.determinator import IncomeDetermination
+from resources.utils.image_utils import get_bounding_box
+from resources.utils.json_utils import build_response
 
 UPLOAD_DIRECTORY = "static/"
 
 if not os.path.exists(UPLOAD_DIRECTORY):
     os.makedirs(UPLOAD_DIRECTORY)
 
-paths = ModelPath()
+paths = ModelPaths()
 model = IncomeDetermination(paths)
+
+logger = logging.getLogger('root')
+FORMAT = "[%(filename)s:%(lineno)s - %(funcName)20s() ] %(message)s"
+logging.basicConfig(format=FORMAT)
+logger.setLevel(logging.DEBUG)
 
 
 class PredictResource(Resource):
@@ -40,16 +41,18 @@ class PredictResource(Resource):
         """
 
         start = time.time()
-        print("Recibiendo imagen...")
+        logger.debug("Receiving image...")
         request_dict = request.get_json()
         if not request_dict:
             response = {'error': 'No data provided'}
+            logger.error("No data provided!")
             return response, status.HTTP_400_BAD_REQUEST
 
         filepath = request_dict["filepath"]
 
         if filepath is None:
             response = {'error': 'No filepath given'}
+            logger.error("No filepath given!")
             return response, status.HTTP_400_BAD_REQUEST
 
         last_slash = filepath.rfind('/') + 1  # Ocurrencia de la última diagonal + 1
@@ -61,82 +64,49 @@ class PredictResource(Resource):
         with pysftp.Connection(host=cred.sftp_hostname,
                                username=cred.sftp_username,
                                password=cred.sftp_password) as sftp:
-            print("Nombre del archivo: {}".format(filename))
+            logger.debug("Filename: {}".format(filename))
             file = BytesIO()
-            print(filepath)
+            logger.debug(filepath)
             sftp.getfo(filepath, file)
             file.seek(0)
             data = file.read()
             reading = time.time()
-            print("Imagen recibida, tiempo transcurrido: {}s".format(str(round(reading - start, 2))))
-            print("Abriendo la imagen...")
+            logger.debug("Image Received. Elapsed time: {}s".format(str(round(reading - start, 2))))
+            logger.debug("Opening image...")
 
             try:  # Intenta abrir la imagen. De no ser una imagen, se informa al cliente
                 memfile = MemoryFile(data)
                 dataset = memfile.open()
-                profile = dataset.profile
                 img_npy = dataset.read()
             except rasterio.errors.RasterioIOError:
                 response = {'error': 'File is not an image'}
+                logger.error("File {} is not an image!".format(filepath))
                 return response, status.HTTP_400_BAD_REQUEST
 
             opening = time.time()
-            print("Imagen abierta, tiempo transcurrido: {}s".format(str(round(opening - reading, 2))))
+            logger.debug("Image opened. Elapsed time: {}s".format(str(round(opening - reading, 2))))
 
             if img_npy.shape[0] != 4:
                 response = {'error': 'Incorrect number of channels'}
                 return response, status.HTTP_400_BAD_REQUEST
             elif (img_npy.shape[1] < 512) or (img_npy.shape[2] < 512):
                 response = {'error': 'Image can not be split into 4x512x512 patches'}
+                logger.error("Image can not be split into 4x512x512 patches")
                 return response, status.HTTP_400_BAD_REQUEST
 
-            print("Dimensiones de la imagen: {}".format(str(img_npy.shape)))
-            print("Minimo: {} | Maximo: {}".format(str(img_npy.min()), str(img_npy.max())))
+            logger.debug("Image shape: {}".format(str(img_npy.shape)))
 
-            print("Creando bloques de 4 x 512 x 512...")
-            patches, meta = create_patches(dataset)
-            splitting = time.time()
-            print(
-                "Bloques de 4 x 512 x 512 creados, tiempo transcurrido: {}s".format(str(round(splitting - opening, 2))))
-            masks = {}
-            bar = progressbar.ProgressBar(maxval=len(patches),
-                                          widgets=[progressbar.Bar('=', '[', ']'), ' ', progressbar.Counter(), " / ",
-                                                   str(len(patches))])
-            # La barra se muestra así [=========         ] X / Total
-            bar.start()
-            idx = 0
-            print("Obteniendo las máscaras por cada bloque...")
-            levels = IncomeLevels()
-            for patch in patches:
-                prediction = model.predict(patch)
+            logger.debug("Generating mask...")
 
-                for idx in range(prediction.shape[1]):
-                    if not levels[idx] in masks:
-                        masks[levels[idx]] = []
-
-                    masks[levels[idx]]. \
-                        append(torch.reshape(prediction, (1, 1, prediction.shape[0], prediction.shape[1]))
-                               .data.cpu().numpy())
-
-                bar.update(idx + 1)
-                idx += 1
+            predict = model.predict(img_npy)
 
             predicting = time.time()
-            print("Mascaras obtenidas! Tiempo transcurrido: {}s".format(str(round(predicting - splitting, 2))))
-
-            reconstructed_maps = []
-
-            for level, mask_set in masks.items():
-
-                mask_set = np.asarray(mask_set)
-                mask_filename, mask, mask_metadata = reconstruct_image(mask_set, meta, img_npy.shape, filename, level)
-                png_filename = convert_mask_to_png(mask_filename, mask, mask_metadata)
-                reconstructed_maps.append(png_filename)
+            logger.debug("Mask generated! Elapsed time: {}s".format(str(round(predicting - opening, 2))))
 
             bounding_box = get_bounding_box(memfile.open())
 
             end = time.time()
-            response = build_response(bounding_box, reconstructed_maps)
-            print("Tiempo total: {}s".format(str(round(end - start, 2))))
+            response = build_response(bounding_box, predict)
+            logger.debug("Total Elapsed Time: {}s".format(str(round(end - start, 2))))
 
             return response, status.HTTP_200_OK

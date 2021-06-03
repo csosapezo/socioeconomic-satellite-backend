@@ -7,8 +7,8 @@ from resources.utils.image_utils import preprocess_image
 
 class IncomeDetermination(object):
     def __init__(self, paths):
-        self.roof_model = model_utils.load_model(paths.roof_segmentation_model_path)
-        self.income_model = model_utils.load_model(paths.income_level_determination_model_path)
+        self.roof_model = model_utils.load_model(paths.roof_model_state_dict)
+        self.income_model = model_utils.load_model(paths.income_model_state_dict, num_classes=2, input_channels=5)
 
     def image_loader(self, img):
         """
@@ -33,4 +33,4 @@ class IncomeDetermination(object):
         response = model_utils.run_model_softmax(img_mask_input, trained_model)
         del trained_model
 
-        return response
+        return response.cpu().numpy()

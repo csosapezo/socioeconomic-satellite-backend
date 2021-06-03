@@ -1,10 +1,13 @@
 import os
 
-from dotenv import load_dotenv
+import configparser
+
+config_file = os.path.abspath(os.path.join(os.path.dirname(__file__), "init_files", "models.ini"))
 
 
-class ModelPath:
-    def __init__(self):
-        load_dotenv()
-        self.roof_segmentation_model_path = os.getenv("ROOF_SEGMENTATION_MODEL_PATH")
-        self.income_level_determination_model_path = os.getenv("INCOME_LEVEL_DETERMINATION_MODEL_PATH")
+class ModelPaths:
+    def __init__(self, ini_file=config_file):
+        config = configparser.ConfigParser()
+        config.read(ini_file)
+        self.roof_model_state_dict = config["ROOF"]["STATE_DICT"]
+        self.income_model_state_dict = config["INCOME"]["STATE_DICT"]

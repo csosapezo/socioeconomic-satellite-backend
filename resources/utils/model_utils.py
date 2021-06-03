@@ -5,15 +5,23 @@ import resources.utils.models as models
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 
-def load_model(model_path):
+def load_model(model_path, input_channels=4, num_classes=1):
     """
     Carga en GPU un modelo de PyTorch.
 
     :param model_path: archivo .pth que representa al modelo
     :type model_path: str
+
+    :param input_channels: bandas de la imagen de entrada
+    :type input_channels: int
+
+    :param num_classes: cantidad de clases de predicción
+    :type num_classes: int
+
+    :rtype: torch.nn.Module
     """
 
-    model = models.UNet11()
+    model = models.UNet11(num_classes=num_classes, input_channels=input_channels)
     model.load_state_dict(torch.load(model_path))
     model.to(device)
     return model
@@ -48,5 +56,6 @@ def run_model_softmax(patch, model):
     """
     model.eval()
     # print("Model in eval mode")
-    response = torch.sigmoid(model(patch))
+    with torch.set_grad_enabled(False):
+        response = torch.exp(model(patch))
     return response
