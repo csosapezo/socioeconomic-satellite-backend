@@ -165,7 +165,7 @@ def convert_mask_to_png(filename, raster, metadata, colours, idx):
     :type colours: tuple[int, int, int]
 
     :param idx: índice del nivel
-    :
+    :type idx: int
 
     :rtype: str
 
@@ -174,7 +174,7 @@ def convert_mask_to_png(filename, raster, metadata, colours, idx):
     new_metadata['count'] = 3
     new_metadata['driver'] = 'PNG'
 
-    png_filename = filename[:-4] + ".png"
+    png_filename = filename[:-4] + "_{}.png".format(str(idx))
 
     new_raster = np.zeros(shape=[3, new_metadata['height'], new_metadata['width']])
     new_raster[0] = raster * colours[0]
