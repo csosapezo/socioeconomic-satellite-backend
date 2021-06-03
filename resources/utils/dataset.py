@@ -1,15 +1,14 @@
-'''
+"""
 This code is to load images and masks: data loader
 Input:
 -Satelite Images (CH,H,W)
 Output:
 - Images after transformations and convert to float tensor (CH,H,W)
-''' 
+"""
 
 import torch
 import numpy as np
 from torch.utils.data import Dataset
-
 
 
 class WaterDataset(Dataset):
@@ -30,10 +29,9 @@ class WaterDataset(Dataset):
             img_file_name = self.img_paths[idx]
         else:
             img_file_name = np.random.choice(self.img_paths)
-            
 
         img = load_image(img_file_name)
-        #print(self.mode)
+        # print(self.mode)
 
         if self.mode == 'train':
             mask = load_mask(img_file_name)
@@ -45,21 +43,22 @@ class WaterDataset(Dataset):
             mask = np.zeros(img.shape[:2])
             img, mask = self.transform(img, mask)
 
-            return to_float_tensor(img), str(img_file_name) 
+            return to_float_tensor(img), str(img_file_name)
 
 
 def to_float_tensor(img):
-    img=torch.from_numpy(np.moveaxis(img, -1, 0)).float()  
+    img = torch.from_numpy(np.moveaxis(img, -1, 0)).float()
     return img
 
 
-def load_image(path): #Input:CH,H,W  Output:H,W,CH 
+def load_image(path):  # Input:CH,H,W  Output:H,W,CH
     img = np.load(str(path))
-    img=img.transpose((1, 2, 0))  
-    return  img 
+    img = img.transpose((1, 2, 0))
+    return img
 
-def load_mask(path):   #Input:CH,H,W  Output:H,W,CH  
+
+def load_mask(path):  # Input:CH,H,W  Output:H,W,CH
     mask = np.load(str(path).replace('images', 'masks').replace(r'.npy', r'_a.npy'), 0)
-    mask=mask.transpose(1, 2, 0).reshape(mask.shape[1],-1)
-    mask=(mask > 0).astype(np.uint8)
+    mask = mask.transpose(1, 2, 0).reshape(mask.shape[1], -1)
+    mask = (mask > 0).astype(np.uint8)
     return mask

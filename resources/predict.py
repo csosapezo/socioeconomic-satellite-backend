@@ -11,8 +11,9 @@ from rasterio.io import MemoryFile
 
 import status
 from config import SFTPCredentials, ModelPaths
+from config.income_levels import IncomeLevels
 from resources.utils.determinator import IncomeDetermination
-from resources.utils.image_utils import get_bounding_box
+from resources.utils.image_utils import get_bounding_box, define_mask, convert_mask_to_png
 from resources.utils.json_utils import build_response
 
 UPLOAD_DIRECTORY = "static/"
@@ -77,6 +78,7 @@ class PredictResource(Resource):
             try:  # Intenta abrir la imagen. De no ser una imagen, se informa al cliente
                 memfile = MemoryFile(data)
                 dataset = memfile.open()
+                meta = dataset.profile
                 img_npy = dataset.read()
             except rasterio.errors.RasterioIOError:
                 response = {'error': 'File is not an image'}
@@ -89,16 +91,23 @@ class PredictResource(Resource):
             if img_npy.shape[0] != 4:
                 response = {'error': 'Incorrect number of channels'}
                 return response, status.HTTP_400_BAD_REQUEST
-            elif (img_npy.shape[1] < 512) or (img_npy.shape[2] < 512):
-                response = {'error': 'Image can not be split into 4x512x512 patches'}
-                logger.error("Image can not be split into 4x512x512 patches")
+            elif (img_npy.shape[1] != 512) or (img_npy.shape[2] != 512):
+                response = {'error': 'Image shape is not correct'}
+                logger.error("Image shape is not correct")
                 return response, status.HTTP_400_BAD_REQUEST
 
             logger.debug("Image shape: {}".format(str(img_npy.shape)))
 
             logger.debug("Generating mask...")
 
-            predict = model.predict(img_npy)
+            mask, roof_mask = model.predict(img_npy)
+            mask = define_mask(mask, roof_mask)
+            layers_paths = []
+            income_levels = IncomeLevels()
+
+            for idx, layer in enumerate(mask):
+                layer_path = convert_mask_to_png(filename, mask, meta, income_levels[idx], idx)
+                layers_paths.append(layer_path)
 
             predicting = time.time()
             logger.debug("Mask generated! Elapsed time: {}s".format(str(round(predicting - opening, 2))))
@@ -106,7 +115,7 @@ class PredictResource(Resource):
             bounding_box = get_bounding_box(memfile.open())
 
             end = time.time()
-            response = build_response(bounding_box, predict)
+            response = build_response(bounding_box, layers_paths)
             logger.debug("Total Elapsed Time: {}s".format(str(round(end - start, 2))))
 
             return response, status.HTTP_200_OK

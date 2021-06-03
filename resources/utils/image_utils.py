@@ -1,48 +1,53 @@
 import os
+from io import BytesIO
 from itertools import product
 
 import numpy as np
 import rasterio as rio
 import torch
+from PIL import Image
 from pyproj import Transformer
 from rasterio import windows
 from rasterio.io import MemoryFile
 from torch.autograd import Variable
-from io import BytesIO
 
 from resources.utils.dataset import to_float_tensor
-from resources.utils.transformsdata import CenterCrop, DualCompose, ImageOnly, Normalize
-from PIL import Image
-
-from xml.dom import minidom
+from resources.utils.transformsdata import DualCompose, ImageOnly, Normalize
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 UPLOAD_DIRECTORY = "static/"
 
 
-def transform_function():
-    """Función de normalización para una imagen satelital."""
-    image_transform = DualCompose([CenterCrop(512), ImageOnly(
-        Normalize(mean=[0.11555246, 0.10432396, 0.1150794, 0.14246734],
-                  std=[0.08946183, 0.06699049, 0.05742599, 0.11001556]))])
-    return image_transform
-
-
-def preprocess_image(img):
+def preprocess_image(img, dataset):
     """Normaliza y transforma la imagen en un tensor apto para ser procesado por la red neuronal de segmentación de
     cuerpos de agua.
-    Dimensiones: entrada: (4,512,512); salida: (1,4,512,512)
-
+    Dimensiones: entrada: (X,512,512); salida: (1,X,512,512)
     :param img: imagen por preprocesar
     :type img: np.ndarray
+    :param dataset: tipo de tarea
+    :type dataset: str
     """
+    print(img.shape)
     img = img.transpose((1, 2, 0))
-    image_transform = transform_function()
+    image_transform = transform_function(dataset)
     img_for_model = image_transform(img)[0]
     img_for_model = Variable(to_float_tensor(img_for_model), requires_grad=False)
     img_for_model = img_for_model.unsqueeze(0).to(device)
 
     return img_for_model
+
+
+def transform_function(dataset):
+    """Función de normalización para una imagen satelital."""
+    if dataset == "roof":
+        image_transform = DualCompose([ImageOnly(
+            Normalize(mean=[0.09444648, 0.08571006, 0.10127277, 0.09419213],
+                      std=[0.03668221, 0.0291096, 0.02894425, 0.03613606]))])
+    else:
+        image_transform = DualCompose([ImageOnly(
+            Normalize(mean=[0.14308006, 0.12414238, 0.13847679, 0.14984046, 0.61647371],
+                      std=[0.0537779,  0.04049726, 0.03915002, 0.0497247,  0.48624467]))])
+    return image_transform
 
 
 def create_patches(dataset):
@@ -127,7 +132,22 @@ def reconstruct_image(masks, metadata, img_shape, filename, level):
     return mask_filename, mask, metadata
 
 
-def convert_mask_to_png(filename, raster, metadata):
+def define_mask(mask, roof_mask):
+    mask = mask[0]
+    roof_mask = roof_mask[0][0]
+
+    mask[0] = mask[0] * roof_mask
+    mask[1] = mask[1] * roof_mask
+
+    for x in range(512):
+        for y in range(512):
+            for z in range(2):
+                mask[z, y, x] = int(mask[z, y, x] > 0.5)
+
+    return mask
+
+
+def convert_mask_to_png(filename, raster, metadata, colours, idx):
     """Transforma una máscara en una imagen png para su visualización en plataformas web.
 
     :param filename: ruta de la máscara originalmente generada como TIF
@@ -141,6 +161,14 @@ def convert_mask_to_png(filename, raster, metadata):
     :param metadata: diccionario con los metadatos de la máscara
     :type metadata: dict
 
+    :param colours: colores para colorear la máscara
+    :type colours: tuple[int, int, int]
+
+    :param idx: índice del nivel
+    :
+
+    :rtype: str
+
     """
     new_metadata = metadata
     new_metadata['count'] = 3
@@ -149,8 +177,9 @@ def convert_mask_to_png(filename, raster, metadata):
     png_filename = filename[:-4] + ".png"
 
     new_raster = np.zeros(shape=[3, new_metadata['height'], new_metadata['width']])
-    new_raster[2] = raster[0]
-    new_raster[2] = new_raster[2] * 255
+    new_raster[0] = raster * colours[0]
+    new_raster[1] = raster * colours[1]
+    new_raster[2] = raster * colours[2]
     new_raster = new_raster.astype('uint8')
 
     with rio.open(UPLOAD_DIRECTORY + png_filename, 'w', **new_metadata) as dst:
@@ -188,6 +217,7 @@ def convert_raster_to_png(filename, raster, metadata):
 
     return png_filename
 
+
 def get_png_raster(filepath, sftp, metadata):
     last_slash = filepath.rfind('/') + 1  # Ocurrencia de la última diagonal + 1
     last_dot = filepath.rfind('.')  # Ocurrencia del último punto
@@ -203,7 +233,7 @@ def get_png_raster(filepath, sftp, metadata):
     file.seek(0)
     pic = np.array(Image.open(file))
 
-    pic = pic.transpose((2,0,1))
+    pic = pic.transpose((2, 0, 1))
 
     new_metadata = metadata
     new_metadata['count'] = 3
@@ -216,7 +246,6 @@ def get_png_raster(filepath, sftp, metadata):
         dst.write(pic)
 
     return png_filename
-
 
 
 def get_bounding_box(dataset):
@@ -270,21 +299,6 @@ def get_bounding_box_from_file(file):
         response = {'error': 'File is not an image'}
         return response
 
-def get_bounding_box_from_xml(file):
-    data = minidom.parse(file)
-    longs = [float(x.firstChild.data) for x in data.getElementsByTagName('LON')]
-    lats = [float(x.firstChild.data) for x in data.getElementsByTagName('LAT')]
-    top, bottom = max(lats), min(lats)
-    left, right = min(longs), max(longs)
-
-    bounding_box = {
-        'left': round(bottom, 3),
-        'bottom': round(left, 3),
-        'right': round(top, 3),
-        'top': round(right, 3)
-    }
-
-    return bounding_box
 
 def rect_overlap(l1, r1, l2, r2):
     print(l1, r1, l2, r2)

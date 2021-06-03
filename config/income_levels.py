@@ -6,13 +6,18 @@ config_file = os.path.abspath(os.path.join(os.path.dirname(__file__), "init_file
 
 
 class IncomeLevels:
-    def __init__(self, ini_file=config_file, scale='LIMA'):
+    def __init__(self, ini_file=config_file):
         config = configparser.ConfigParser()
         config.read(ini_file)
-        self.levels = {}
+        self.levels = []
 
-        for index, level in config[scale].items():
-            self.levels[level] = int(index)
+        for _, level in config["INFO"].items():
+            red = int(config[level]["R"])
+            green = int(config[level]["G"])
+            blue = int(config[level]["B"])
 
-    def __getitem__(self, level):
-        return self.levels[level]
+            colour = (red, green, blue)
+            self.levels.append(colour)
+
+    def __getitem__(self, idx):
+        return self.levels[idx]
