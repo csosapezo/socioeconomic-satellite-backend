@@ -47,11 +47,11 @@ class SearchImagesResource(Resource):
                 print("conexion exitosa")
                 command = "find ./images -name '*P*.tif'"
                 paths = sftp.execute(command)
-                print(paths)
 
                 for path in paths:
 
                     path = path.decode()
+                    print(path)
 
                     file = BytesIO()
 
