@@ -43,7 +43,9 @@ class SearchImagesResource(Resource):
                 "images": []
             }
 
+            print("lee credenciales")
             cred = SFTPCredentials()
+            print("leyó credenciales")
 
             print(cred.sftp_hostname, cred.sftp_username, cred.sftp_password)
 
