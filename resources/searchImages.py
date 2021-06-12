@@ -24,9 +24,13 @@ class SearchImagesResource(Resource):
 
         try:
             left = request_dict["left"]
+            print(left)
             bottom = request_dict["bottom"]
+            print(bottom)
             right = request_dict["right"]
+            print(right)
             top = request_dict["top"]
+            print(top)
 
             area_of_interest = {
                 "left": left,
