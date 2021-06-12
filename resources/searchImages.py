@@ -41,9 +41,12 @@ class SearchImagesResource(Resource):
 
             cred = SFTPCredentials()
 
+            print(cred.sftp_hostname, cred.sftp_username, cred.sftp_password)
+
             with pysftp.Connection(host=cred.sftp_hostname,
                                    username=cred.sftp_username,
                                    password=cred.sftp_password) as sftp:
+                print("conexion exitosa")
                 command = "find ./images -name '*P*.tif'"
                 paths = sftp.execute(command)
 
