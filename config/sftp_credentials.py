@@ -12,5 +12,8 @@ class SFTPCredentials:
         config.read(ini_file)
         print(config)
         self.sftp_hostname = config["SFTP"]["HOSTNAME"]
+        print(self.sftp_hostname)
         self.sftp_username = config["SFTP"]["USERNAME"]
+        print(self.sftp_username)
         self.sftp_password = config["SFTP"]["PASSWORD"]
+        print(self.sftp_password)
