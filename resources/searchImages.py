@@ -20,17 +20,11 @@ class SearchImagesResource(Resource):
         # Los datos de coordenadas llegaran como Norte, Oeste, Sur, Este
         # Top, left, bottom, right
 
-        print(request_dict)
-
         try:
             left = request_dict["left"]
-            print(left)
             bottom = request_dict["bottom"]
-            print(bottom)
             right = request_dict["right"]
-            print(right)
             top = request_dict["top"]
-            print(top)
 
             area_of_interest = {
                 "left": left,
@@ -43,9 +37,7 @@ class SearchImagesResource(Resource):
                 "images": []
             }
 
-            print("lee credenciales")
             cred = SFTPCredentials()
-            print("leyó credenciales")
 
             print(cred.sftp_hostname, cred.sftp_username, cred.sftp_password)
 
