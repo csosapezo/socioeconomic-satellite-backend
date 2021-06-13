@@ -258,8 +258,8 @@ def get_bounding_box(dataset):
     origin_bb = dataset.bounds
 
     transformer = Transformer.from_crs(dataset.profile['crs'], 'epsg:4326')
-    left, bottom = transformer.transform(origin_bb.left, origin_bb.bottom)
-    right, top = transformer.transform(origin_bb.right, origin_bb.top)
+    bottom, left = transformer.transform(origin_bb.left, origin_bb.bottom)
+    top, right = transformer.transform(origin_bb.right, origin_bb.top)
 
     bounding_box = {
         'left': round(left, 3),
