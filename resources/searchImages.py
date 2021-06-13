@@ -52,21 +52,22 @@ class SearchImagesResource(Resource):
                     path_ = path.decode()
                     path_ = path_[1:-1]
                     print("./images/" + path_)
+                    path_ = "./images/" + path_
 
                     file = BytesIO()
-                    sftp.getfo("./images/" + path_, file)
+                    sftp.getfo(path_, file)
                     file.seek(0)
                     print("imagen obtenida")
                     print("obteniendo bb")
                     bounding_box = get_bounding_box_from_file(file)
 
-                    if (rect_overlap((bounding_box["top"], bounding_box["left"]),
-                                     (bounding_box["bottom"], bounding_box["right"]),
-                                     (area_of_interest["top"], area_of_interest["left"]),
-                                     (area_of_interest["bottom"], area_of_interest["right"]))):
-                        last_slash = path.rfind('/') + 1  # Ocurrencia de la última diagonal + 1
-                        last_dot = path.rfind('.')  # Ocurrencia del último punto
-                        filename = path[last_slash:last_dot]  # Nombre de la imagen
+                    if (rect_overlap((bounding_box["top"], bounding_box["right"]),
+                                     (bounding_box["bottom"], bounding_box["left"]),
+                                     (area_of_interest["top"], area_of_interest["right"]),
+                                     (area_of_interest["bottom"], area_of_interest["left"]))):
+                        last_slash = path_.rfind('/') + 1  # Ocurrencia de la última diagonal + 1
+                        last_dot = path_.rfind('.')  # Ocurrencia del último punto
+                        filename = path_[last_slash:last_dot]  # Nombre de la imagen
                         response["images"].append({
                             "path": path,
                             "name": filename,
