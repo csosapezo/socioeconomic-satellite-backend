@@ -49,8 +49,8 @@ class SearchImagesResource(Resource):
 
                 for path in paths:
 
-                    path = path.decode()
-                    path_ = path[:-1]
+                    path_ = path.decode()
+                    path_ = path_[:-1]
                     print(path)
 
                     file = BytesIO()
