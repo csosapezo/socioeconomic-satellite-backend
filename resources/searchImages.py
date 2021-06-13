@@ -50,16 +50,15 @@ class SearchImagesResource(Resource):
                 for path in paths:
 
                     path = path.decode()
-                    path = path[:-1]
+                    path_ = path[:-1]
                     print(path)
 
                     file = BytesIO()
-                    sftp.getfo(path, file)
+                    sftp.getfo(path_, file)
                     file.seek(0)
                     print("imagen obtenida")
                     print("obteniendo bb")
                     bounding_box = get_bounding_box_from_file(file)
-                    print(bounding_box)
 
                     if (rect_overlap((bounding_box["top"], bounding_box["left"]),
                                      (bounding_box["bottom"], bounding_box["right"]),
