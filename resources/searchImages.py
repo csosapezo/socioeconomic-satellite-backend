@@ -44,23 +44,19 @@ class SearchImagesResource(Resource):
             with pysftp.Connection(host=cred.sftp_hostname,
                                    username=cred.sftp_username,
                                    password=cred.sftp_password) as sftp:
-                print("conexion exitosa")
                 command = "find . -name '*P*.tif'"
-                base_dir = "/home/{}/images".format(cred.sftp_username)
                 paths = sftp.execute(command)
 
                 for path in paths:
 
                     path = path.decode()
+                    path = path[:-1]
                     print(path)
 
                     file = BytesIO()
-                    print(base_dir + path[1:])
-                    sftp.chdir(base_dir)
-                    print(sftp.execute("ls"))
-                    sftp.getfo(path.rfind("/"), file)
+                    sftp.getfo(path, file)
                     file.seek(0)
-                    print("imagen obtenida", file)
+                    print("imagen obtenida")
                     print("obteniendo bb")
                     bounding_box = get_bounding_box_from_file(file)
                     print(bounding_box)
