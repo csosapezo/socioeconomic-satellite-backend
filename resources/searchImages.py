@@ -62,8 +62,8 @@ class SearchImagesResource(Resource):
 
                     if (rect_overlap((bounding_box["top"], bounding_box["left"]),
                                      (bounding_box["bottom"], bounding_box["right"]),
-                                     (area_of_interest["bottom"], area_of_interest["left"]),
-                                     (area_of_interest["top"], area_of_interest["right"]))):
+                                     (area_of_interest["top"], area_of_interest["left"]),
+                                     (area_of_interest["bottom"], area_of_interest["right"]))):
                         last_slash = path.rfind('/') + 1  # Ocurrencia de la última diagonal + 1
                         last_dot = path.rfind('.')  # Ocurrencia del último punto
                         filename = path[last_slash:last_dot]  # Nombre de la imagen
