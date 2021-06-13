@@ -69,7 +69,7 @@ class SearchImagesResource(Resource):
                         last_dot = path_.rfind('.')  # Ocurrencia del último punto
                         filename = path_[last_slash:last_dot]  # Nombre de la imagen
                         response["images"].append({
-                            "path": path,
+                            "path": path_,
                             "name": filename,
                             "bounding_box": bounding_box
                         })
