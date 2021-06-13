@@ -44,7 +44,7 @@ class SearchImagesResource(Resource):
             with pysftp.Connection(host=cred.sftp_hostname,
                                    username=cred.sftp_username,
                                    password=cred.sftp_password) as sftp:
-                command = "find . -name './images/*P*.tif'"
+                command = "find . -name '*images/*P*.tif'"
                 paths = sftp.execute(command)
 
                 for path in paths:
