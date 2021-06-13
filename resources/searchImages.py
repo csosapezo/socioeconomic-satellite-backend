@@ -54,8 +54,8 @@ class SearchImagesResource(Resource):
                     print(path)
 
                     file = BytesIO()
-
-                    print(sftp.getfo(path, file))
+                    print(sftp.execute(path))
+                    sftp.getfo(path, file)
                     file.seek(0)
                     print("imagen obtenida", file)
                     print("obteniendo bb")
