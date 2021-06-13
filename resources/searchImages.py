@@ -56,8 +56,10 @@ class SearchImagesResource(Resource):
                     file = BytesIO()
 
                     sftp.getfo(path, file)
+                    print("imagen obtenida", file)
                     file.seek(0)
-
+                    print("imagen obtenida", file)
+                    print("obteniendo bb")
                     bounding_box = get_bounding_box_from_file(file)
                     print(bounding_box)
 
