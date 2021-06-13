@@ -105,7 +105,7 @@ class PredictResource(Resource):
             layers_paths = []
             income_levels = IncomeLevels()
 
-            for idx, layer in enumerate(mask):
+            for idx, layer in enumerate(mask[0]):
                 layer_path = convert_mask_to_png(filename, mask, meta, income_levels[idx], idx)
                 layers_paths.append(layer_path)
 
