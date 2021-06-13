@@ -46,7 +46,7 @@ class SearchImagesResource(Resource):
                                    password=cred.sftp_password) as sftp:
                 print("conexion exitosa")
                 command = "find . -name '*P*.tif'"
-                sftp.cwd("~/images")
+                sftp.cwd("/home/{}/images".format(cred.sftp_username))
                 paths = sftp.execute(command)
 
                 for path in paths:
