@@ -257,7 +257,7 @@ def get_bounding_box(dataset):
     """
     # Obtiene el bounding box original
 
-    offset = (-11.66, 38.54)
+    offset = (-12.56, 37.44)
 
     origin_bb = dataset.bounds
 
