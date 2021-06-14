@@ -1,6 +1,7 @@
 import logging
 import os
 import time
+from copy import deepcopy
 from io import BytesIO
 
 import pysftp
@@ -115,6 +116,15 @@ class PredictResource(Resource):
             logger.debug("Mask generated! Elapsed time: {}s".format(str(round(predicting - opening, 2))))
 
             bounding_box = get_bounding_box(memfile.open())
+
+            metadata = deepcopy(meta)
+            metadata['count'] = mask.shape[0]
+            metadata['height'] = mask.shape[1]
+            metadata['width'] = mask.shape[2]
+            metadata['dtype'] = mask.dtype
+
+            with rasterio.open(os.path.join(UPLOAD_DIRECTORY, filename + ".tif"), 'w', **metadata) as outds:
+                outds.write(mask)
 
             print(bounding_box)
 
