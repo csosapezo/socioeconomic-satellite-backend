@@ -42,6 +42,8 @@ class CheckFileResource(Resource):
 
         bounding_box = get_bounding_box_from_name(UPLOAD_DIRECTORY + response_masks[0])
 
+        response_masks.pop(0)
+
         response = build_response(bounding_box, response_masks, bool(response_masks))
 
         return response, status.HTTP_200_OK
