@@ -24,7 +24,8 @@ class CheckFileResource(Resource):
         image_name = request.args['name'][last_slash:last_dot]  # Nombre de la imagen
 
         preprocessed_masks = listdir(UPLOAD_DIRECTORY)
-
+        print(preprocessed_masks)
+        print(image_name)
         response_masks = list(filter(lambda filename: image_name in filename, preprocessed_masks))
 
         if not response_masks:
