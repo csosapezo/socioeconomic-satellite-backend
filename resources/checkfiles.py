@@ -32,11 +32,11 @@ class CheckFileResource(Resource):
             print("Archivo no encontrado.")
             return build_response({}, [], bool(response_masks))
 
-        aux_masks = deepcopy(response_masks)
+        aux_masks = []
 
         for i in range(len(response_masks)):
-            if response_masks[i].rfind("xml") != -1:
-                aux_masks.pop(i)
+            if response_masks[i].rfind("xml") == -1:
+                aux_masks.append(response_masks[i])
 
         response_masks = aux_masks
 
