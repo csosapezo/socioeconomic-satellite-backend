@@ -256,11 +256,14 @@ def get_bounding_box(dataset):
     :type dataset: rio.DatasetReader
     """
     # Obtiene el bounding box original
+
+    offset = (-11.56, 38.44)
+
     origin_bb = dataset.bounds
 
     transformer = Transformer.from_crs(dataset.profile['crs'], 'epsg:4326')
-    bottom, left = transformer.transform(origin_bb.left, origin_bb.bottom)
-    top, right = transformer.transform(origin_bb.right, origin_bb.top)
+    bottom, left = transformer.transform(origin_bb.left + offset[0], origin_bb.bottom + offset[1])
+    top, right = transformer.transform(origin_bb.right + offset[0], origin_bb.top + offset[1])
 
     bounding_box = {
         'left': round(left, 3),
