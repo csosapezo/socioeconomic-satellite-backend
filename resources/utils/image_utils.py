@@ -175,7 +175,7 @@ def convert_mask_to_png(filename, raster, metadata, colours, idx):
     new_metadata['driver'] = 'PNG'
     new_metadata['dtype'] = 'uint8'
 
-    png_filename = filename[:-4] + "_{}.png".format(str(idx))
+    png_filename = filename + "_{}.png".format(str(idx))
 
     new_raster = np.zeros(shape=[3, new_metadata['height'], new_metadata['width']])
     new_raster[0] = raster * colours[0]
