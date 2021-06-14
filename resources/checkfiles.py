@@ -26,7 +26,8 @@ class CheckFileResource(Resource):
         preprocessed_masks = listdir(UPLOAD_DIRECTORY)
         print(preprocessed_masks)
         print(image_name)
-        response_masks = list(filter(lambda filename: image_name in filename, preprocessed_masks))
+        response_masks = list(filter(lambda filename: image_name in filename and
+                                                      (("tif" in filename) or ("png" in filename)), preprocessed_masks))
 
         if not response_masks:
             print("Archivo no encontrado.")
