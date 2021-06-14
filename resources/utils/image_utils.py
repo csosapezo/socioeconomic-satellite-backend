@@ -144,7 +144,7 @@ def define_mask(mask, roof_mask):
             for z in range(2):
                 mask[z, y, x] = int(mask[z, y, x] > 0.5)
 
-    return mask
+    return mask.astype(int)
 
 
 def convert_mask_to_png(filename, raster, metadata, colours, level):
