@@ -32,7 +32,7 @@ def build_response(bounding_box, masks, is_located=None):
             'masks': [
                 {
                     'url': url_for('static', filename=mask),
-                    'level': mask[mask.rfind['_'] + 1:mask.rfind['.']]
+                    'level': mask[mask.rfind('_') + 1:mask.rfind('.')]
                 }
                 for mask in masks]
         }
