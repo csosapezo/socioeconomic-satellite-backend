@@ -15,7 +15,6 @@ def build_response(bounding_box, masks, is_located=None):
     :type is_located: bool
     """
 
-    print("mascaras:", masks)
 
     if is_located is False:
         image = {}

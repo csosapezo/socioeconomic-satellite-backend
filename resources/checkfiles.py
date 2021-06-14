@@ -29,7 +29,6 @@ class CheckFileResource(Resource):
                                      preprocessed_masks))
 
         if not response_masks:
-            print("Archivo no encontrado.")
             return build_response({}, [], bool(response_masks))
 
         aux_masks = []

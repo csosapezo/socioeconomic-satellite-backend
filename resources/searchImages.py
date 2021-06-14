@@ -39,7 +39,6 @@ class SearchImagesResource(Resource):
 
             cred = SFTPCredentials()
 
-            print(cred.sftp_hostname, cred.sftp_username, cred.sftp_password)
 
             with pysftp.Connection(host=cred.sftp_hostname,
                                    username=cred.sftp_username,
@@ -51,14 +50,11 @@ class SearchImagesResource(Resource):
 
                     path_ = path.decode()
                     path_ = path_[1:-1]
-                    print("./images/" + path_)
                     path_ = "./images/" + path_
 
                     file = BytesIO()
                     sftp.getfo(path_, file)
                     file.seek(0)
-                    print("imagen obtenida")
-                    print("obteniendo bb")
                     bounding_box = get_bounding_box_from_file(file)
 
                     if (rect_overlap((bounding_box["top"], bounding_box["right"]),

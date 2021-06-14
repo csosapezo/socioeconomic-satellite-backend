@@ -17,13 +17,10 @@ def values_metric(filedata,name_metric):
     return m_metric
 
 
-
-
 def plot_img_array(img_array, filedata,save,out_file, name_output, ncol=3):
     
     m_jaccard=values_metric(filedata,"jaccard")
     m_dice=values_metric(filedata,"dice")
-    #print(len(m_jaccard))
 
     nrow = len(img_array)  // ncol    
     plt.close('all')
@@ -36,7 +33,6 @@ def plot_img_array(img_array, filedata,save,out_file, name_output, ncol=3):
         if (i % ncol == 1):
             temp = str(m_dice[count])
             temp1 = str(m_jaccard[count])
-            #print(temp,count)
             count += 1
             plots[i // ncol, i % ncol].set_title("Nº:"+str(count) + " dice: " + temp +" IoU: " + temp1)
         plots[i // ncol, i % ncol].imshow(img_array[i])

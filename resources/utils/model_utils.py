@@ -21,7 +21,6 @@ def load_model(model_path, input_channels=4, num_classes=1):
 
     :rtype: torch.nn.Module
     """
-    print(os.system("pwd"))
     model = models.UNet11(num_classes=num_classes, input_channels=input_channels)
     model.load_state_dict(torch.load(model_path))
     model.to(device)

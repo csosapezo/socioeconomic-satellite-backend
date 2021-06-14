@@ -128,7 +128,6 @@ class PredictResource(Resource):
             with rasterio.open(os.path.join(UPLOAD_DIRECTORY, filename + ".tif"), 'w', **metadata) as outds:
                 outds.write(mask)
 
-            print(bounding_box)
 
             end = time.time()
             response = build_response(bounding_box, layers_paths)

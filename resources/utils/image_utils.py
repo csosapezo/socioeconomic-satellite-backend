@@ -27,7 +27,6 @@ def preprocess_image(img, dataset):
     :param dataset: tipo de tarea
     :type dataset: str
     """
-    print(img.shape)
     img = img.transpose((1, 2, 0))
     image_transform = transform_function(dataset)
     img_for_model = image_transform(img)[0]
@@ -228,7 +227,6 @@ def get_png_raster(filepath, sftp, metadata):
     last_dot = filepath.rfind('.')  # Ocurrencia del último punto
     filepath = filepath[:last_slash] + "PREVIEW" + filepath[last_slash + 3: last_dot] + ".JPG"
 
-    print(filepath)
     file = BytesIO()
     sftp.getfo(filepath, file)
     file.seek(0)
@@ -305,7 +303,6 @@ def get_bounding_box_from_file(file):
 
 
 def rect_overlap(l1, r1, l2, r2):
-    print(l1, r1, l2, r2)
     if l1[0] <= r2[0] or l2[0] <= r1[0]:
         return False
 

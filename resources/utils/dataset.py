@@ -31,7 +31,6 @@ class WaterDataset(Dataset):
             img_file_name = np.random.choice(self.img_paths)
 
         img = load_image(img_file_name)
-        # print(self.mode)
 
         if self.mode == 'train':
             mask = load_mask(img_file_name)
