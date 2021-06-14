@@ -117,6 +117,7 @@ class PredictResource(Resource):
 
             bounding_box = get_bounding_box(memfile.open())
 
+            mask = mask.astype('uint8')
             metadata = deepcopy(meta)
             metadata['driver'] = "GTiff"
             metadata['count'] = mask.shape[0]
