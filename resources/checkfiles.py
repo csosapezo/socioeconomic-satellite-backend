@@ -1,3 +1,4 @@
+from copy import deepcopy
 from os import listdir
 from os.path import join, dirname, realpath
 
@@ -31,9 +32,13 @@ class CheckFileResource(Resource):
             print("Archivo no encontrado.")
             return build_response({}, [], bool(response_masks))
 
+        aux_masks = deepcopy(response_masks)
+
         for i in range(len(response_masks)):
             if response_masks[i].rfind("xml") != -1:
-                response_masks.pop(i)
+                aux_masks.pop(i)
+
+        response_masks = aux_masks
 
         bounding_box = get_bounding_box_from_name(UPLOAD_DIRECTORY + response_masks[0])
 
