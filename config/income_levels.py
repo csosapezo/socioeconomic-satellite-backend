@@ -25,4 +25,7 @@ class IncomeLevels:
         return self.levels[idx]
 
     def name(self, idx):
-        return self.levels[idx]
+        return self.labels[idx]
+
+    def __len__(self):
+        return len(self.levels)

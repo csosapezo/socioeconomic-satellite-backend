@@ -7,9 +7,10 @@ from resources.utils.image_utils import preprocess_image
 
 
 class IncomeDetermination(object):
-    def __init__(self, paths):
+    def __init__(self, paths, num_classes):
         self.roof_model = model_utils.load_model(paths.roof_model_state_dict)
-        self.income_model = model_utils.load_model(paths.income_model_state_dict, num_classes=2, input_channels=5)
+        self.income_model = model_utils.load_model(paths.income_model_state_dict, num_classes=num_classes,
+                                                   input_channels=5)
 
     def image_loader(self, img, dataset):
         """

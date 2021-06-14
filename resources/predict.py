@@ -22,7 +22,8 @@ if not os.path.exists(UPLOAD_DIRECTORY):
     os.makedirs(UPLOAD_DIRECTORY)
 
 paths = ModelPaths()
-model = IncomeDetermination(paths)
+income_levels = IncomeLevels()
+model = IncomeDetermination(paths, len(income_levels))
 
 logger = logging.getLogger('root')
 FORMAT = "[%(filename)s:%(lineno)s - %(funcName)20s() ] %(message)s"
@@ -103,7 +104,6 @@ class PredictResource(Resource):
             mask, roof_mask = model.predict(img_npy)
             mask = define_mask(mask, roof_mask)
             layers_paths = []
-            income_levels = IncomeLevels()
 
             layers_paths.append(convert_raster_to_png(filename, img_npy, meta))
 
