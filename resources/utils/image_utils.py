@@ -173,6 +173,7 @@ def convert_mask_to_png(filename, raster, metadata, colours, idx):
     new_metadata = metadata
     new_metadata['count'] = 3
     new_metadata['driver'] = 'PNG'
+    new_metadata['dtype'] = 'uint8'
 
     png_filename = filename[:-4] + "_{}.png".format(str(idx))
 
@@ -183,7 +184,7 @@ def convert_mask_to_png(filename, raster, metadata, colours, idx):
     new_raster = new_raster.astype('uint8')
 
     with rio.open(UPLOAD_DIRECTORY + png_filename, 'w', **new_metadata) as dst:
-        dst.write(new_raster.astype('uint8'))
+        dst.write(new_raster)
 
     return png_filename
 
