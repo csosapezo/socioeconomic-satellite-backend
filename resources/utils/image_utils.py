@@ -147,7 +147,7 @@ def define_mask(mask, roof_mask):
     return mask
 
 
-def convert_mask_to_png(filename, raster, metadata, colours, idx):
+def convert_mask_to_png(filename, raster, metadata, colours, level):
     """Transforma una máscara en una imagen png para su visualización en plataformas web.
 
     :param filename: ruta de la máscara originalmente generada como TIF
@@ -164,8 +164,8 @@ def convert_mask_to_png(filename, raster, metadata, colours, idx):
     :param colours: colores para colorear la máscara
     :type colours: tuple[int, int, int]
 
-    :param idx: índice del nivel
-    :type idx: int
+    :param level: índice del nivel
+    :type level: str
 
     :rtype: str
 
@@ -175,7 +175,7 @@ def convert_mask_to_png(filename, raster, metadata, colours, idx):
     new_metadata['driver'] = 'PNG'
     new_metadata['dtype'] = 'uint8'
 
-    png_filename = filename + "_{}.png".format(str(idx))
+    png_filename = filename + "_{}.png".format(level)
 
     new_raster = np.zeros(shape=[3, new_metadata['height'], new_metadata['width']])
     new_raster[0] = raster * colours[0]
@@ -209,9 +209,9 @@ def convert_raster_to_png(filename, raster, metadata):
     new_metadata['driver'] = 'PNG'
     new_metadata['dtype'] = 'uint8'
 
-    png_filename = filename[:-4] + ".png"
+    png_filename = filename + "_imagen.png"
     raster = raster[:3]
-    new_raster = (raster / raster.max() * 255).astype('uint8')
+    new_raster = (raster / 3512 * 255).astype('uint8')
 
     with rio.open(UPLOAD_DIRECTORY + png_filename, 'w', **new_metadata) as dst:
         dst.write(new_raster)

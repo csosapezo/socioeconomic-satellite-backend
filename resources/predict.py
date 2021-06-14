@@ -13,7 +13,7 @@ import status
 from config import SFTPCredentials, ModelPaths
 from config.income_levels import IncomeLevels
 from resources.utils.determinator import IncomeDetermination
-from resources.utils.image_utils import get_bounding_box, define_mask, convert_mask_to_png
+from resources.utils.image_utils import get_bounding_box, define_mask, convert_mask_to_png, convert_raster_to_png
 from resources.utils.json_utils import build_response
 
 UPLOAD_DIRECTORY = "static/"
@@ -105,8 +105,10 @@ class PredictResource(Resource):
             layers_paths = []
             income_levels = IncomeLevels()
 
+            layers_paths.append(convert_raster_to_png(filename, img_npy, meta))
+
             for idx, layer in enumerate(mask):
-                layer_path = convert_mask_to_png(filename, layer, meta, income_levels[idx], idx)
+                layer_path = convert_mask_to_png(filename, layer, meta, income_levels[idx], income_levels.name(idx))
                 layers_paths.append(layer_path)
 
             predicting = time.time()

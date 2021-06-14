@@ -10,6 +10,7 @@ class IncomeLevels:
         config = configparser.ConfigParser()
         config.read(ini_file)
         self.levels = []
+        self.labels = []
 
         for _, level in config["INFO"].items():
             red = int(config[level]["R"])
@@ -18,6 +19,10 @@ class IncomeLevels:
 
             colour = (red, green, blue)
             self.levels.append(colour)
+            self.labels.append(level)
 
     def __getitem__(self, idx):
+        return self.levels[idx]
+
+    def name(self, idx):
         return self.levels[idx]
