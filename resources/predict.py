@@ -114,6 +114,8 @@ class PredictResource(Resource):
 
             bounding_box = get_bounding_box(memfile.open())
 
+            print(bounding_box)
+
             end = time.time()
             response = build_response(bounding_box, layers_paths)
             logger.debug("Total Elapsed Time: {}s".format(str(round(end - start, 2))))
