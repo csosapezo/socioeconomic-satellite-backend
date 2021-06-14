@@ -24,14 +24,16 @@ class CheckFileResource(Resource):
         image_name = request.args['name'][last_slash:last_dot]  # Nombre de la imagen
 
         preprocessed_masks = listdir(UPLOAD_DIRECTORY)
-        print(preprocessed_masks)
-        print(image_name)
-        response_masks = list(filter(lambda filename: image_name in filename and "aux" not in filename,
+        response_masks = list(filter(lambda filename: image_name in filename,
                                      preprocessed_masks))
 
         if not response_masks:
             print("Archivo no encontrado.")
             return build_response({}, [], bool(response_masks))
+
+        for i in range(len(response_masks)):
+            if response_masks[i].rfind("xml") != -1:
+                response_masks.pop(i)
 
         bounding_box = get_bounding_box_from_name(UPLOAD_DIRECTORY + response_masks[0])
 
